@@ -5,6 +5,8 @@ import { SplashScreen } from './src/screens';
 import { NavigationContainer } from '@react-navigation/native';
 import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import MainNavigator from './src/navigators/MainNavigator';
+import { StatusBar } from 'react-native';
+import { appColors } from './src/constants/appColors';
 
 const App = () => {
   const [isShowSplash, setIsShowSplash] = useState(true);
@@ -13,29 +15,35 @@ const App = () => {
 
   useEffect(() => {
     const timeOut = setTimeout(() => {
-      setIsShowSplash(false)
+      setIsShowSplash(false);
     }, 1500);
-    return () => clearTimeout(timeOut)
-  }, [])
+    return () => clearTimeout(timeOut);
+  }, []);
 
   useEffect(() => {
     checkLogin();
-  }, [])
+  }, []);
 
   const checkLogin = async () => {
     const token = await getItem();
     token && setAccessToken(token);
-  }
-
+  };
 
   return (
-    isShowSplash ? <SplashScreen /> :
-      <NavigationContainer>
-        {
-          accessToken ? <MainNavigator /> : <AuthNavigator />
-        }
-      </NavigationContainer>
-  )
-}
+    <React.Fragment>
+      <StatusBar
+        barStyle={'dark-content'}
+        backgroundColor={appColors.white}
+      />
+      {isShowSplash ? (
+        <SplashScreen />
+      ) : (
+        <NavigationContainer>
+          {accessToken ? <MainNavigator /> : <AuthNavigator />}
+        </NavigationContainer>
+      )}
+    </React.Fragment>
+  );
+};
 
-export default App
+export default App;

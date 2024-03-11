@@ -4,4 +4,9 @@ export const appColors = {
   text: '#120D26',
   gray: '#3807A7A',
   gray2: '#DADADA',
+  gray3: '#807A7A',
+  gray4: '#E4DFDF',
+  white1: 'rgba(255,255,255,0.2)',
+  purple: '#808EFF',
+  black: 'black',
 };
