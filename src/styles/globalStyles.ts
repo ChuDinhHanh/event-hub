@@ -23,6 +23,6 @@ export const globalStyles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 6,
+    elevation: 5,
   },
 });

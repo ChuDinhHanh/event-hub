@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import React, {useRef, useState} from 'react';
+import {FlatList, StyleSheet, View} from 'react-native';
 import {
   ButtonComponent,
   ContainerComponent,
@@ -8,14 +8,14 @@ import {
   TextComponent,
 } from '../../components';
 import SessionComponent from '../../components/SessionComponent';
-import { appColors } from '../../constants/appColors';
-import { appInfo } from '../../constants/appInfos';
-import { appScreens } from '../../constants/appScreens';
-import { appVariables } from '../../constants/appVariables';
-import { fontFamilies } from '../../constants/fontFamilies';
-import { onboardingData } from '../../data/data';
+import {appColors} from '../../constants/appColors';
+import {appInfo} from '../../constants/appInfos';
+import {appScreens} from '../../constants/appScreens';
+import {appVariables} from '../../constants/appVariables';
+import {fontFamilies} from '../../constants/fontFamilies';
+import {onboardingData} from '../../data/data';
 
-const OnboardingScreen = ({ navigation }: any) => {
+const OnboardingScreen = ({navigation}: any) => {
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const singleOnboardingWidth = appInfo.sizes.WIDTH;
@@ -53,7 +53,7 @@ const OnboardingScreen = ({ navigation }: any) => {
         data={onboardingData}
         extraData={onboardingData}
         keyExtractor={item => item.id.toString()}
-        renderItem={({ item, index }) => (
+        renderItem={({item, index}) => (
           <OnboardingItemComponent
             key={item.id}
             image={item.image}
@@ -63,9 +63,7 @@ const OnboardingScreen = ({ navigation }: any) => {
         )}
       />
       {/* Bottom area*/}
-      <SessionComponent
-        padding={0}
-        style={styles.wrapper_bottom}>
+      <SessionComponent padding={0} style={styles.wrapper_bottom}>
         <SessionComponent>
           <RowComponent alignItems="center" justifyContent="space-between">
             <ButtonComponent
@@ -81,17 +79,18 @@ const OnboardingScreen = ({ navigation }: any) => {
             />
             {/* printf dots */}
             <RowComponent alignItems="center" justifyContent="space-between">
-              {Array.from({ length: numberDots }, (_, index) => (
+              {Array.from({length: numberDots}, (_, index) => (
                 <View
                   key={index}
-                  style={
-                    [styles.wrapper_dots, {
+                  style={[
+                    styles.wrapper_dots,
+                    {
                       backgroundColor:
                         currentIndex === index
                           ? appColors.white
                           : appColors.white1,
-                    }]
-                  }
+                    },
+                  ]}
                 />
               ))}
             </RowComponent>
@@ -116,11 +115,6 @@ const OnboardingScreen = ({ navigation }: any) => {
 export default OnboardingScreen;
 
 const styles = StyleSheet.create({
-  text: {
-    color: appColors.white,
-    fontSize: 16,
-    fontWeight: '500',
-  },
   wrapper_bottom: {
     position: 'absolute',
     zIndex: 999,
@@ -131,5 +125,5 @@ const styles = StyleSheet.create({
     padding: 3.5,
     borderRadius: 3.5,
     marginRight: 3.5,
-  }
+  },
 });
