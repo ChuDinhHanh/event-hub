@@ -10,22 +10,148 @@ import {
   TextComponent,
 } from '../../components';
 import SocialLoginComponent from '../../components/SocialLoginComponent';
+import TextValidate from '../../components/TextValidate';
 import {appColors} from '../../constants/appColors';
+import {appScreens} from '../../constants/appScreens';
 import {fontFamilies} from '../../constants/fontFamilies';
+import {
+  InputTextValidate,
+  isBlank,
+  isEmail,
+  isInsideLimitedLength,
+  isNotSpecialCharacter,
+} from '../../utils/Validate';
 
 const initialValue = {
   email: '',
   password: '',
   isRememberMe: true,
 };
+
+interface Validate {
+  email: InputTextValidate;
+  password: InputTextValidate;
+}
+
+function checkAllFieldValidate(data: Validate): boolean {
+  let key: keyof Validate;
+  for (key in data) {
+    if (data[key].isError) {
+      return false;
+    }
+  }
+  return true;
+}
+
 const LoginScreen = ({navigation}: any) => {
   const [loginData, setLoginData] = useState(initialValue);
-  const [email, setEmail] = useState(loginData.email);
-  const [password, setPassword] = useState(loginData.email);
-  const [isRememberMe, setIsRememberMe] = useState<boolean>(
-    loginData.isRememberMe,
-  );
-  const [isDisable, setIsDisable] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(true);
+  const [loginValidate, setLoginValidate] = useState<Validate>({
+    email: {
+      textError: 'Email không được để trống',
+      visible: false,
+      isError: true,
+    },
+    password: {
+      textError: 'Password không được để trống',
+      visible: false,
+      isError: true,
+    },
+  });
+
+  const handleOnTextChangeEvent = (key: string, val: any) => {
+    const data: any = {...loginData, [key]: val};
+    setLoginData(data);
+    handleValidateActions(key, val);
+  };
+
+  const handleValidateActions = (key: string, val: any) => {
+    switch (key) {
+      case 'email':
+        if (isBlank(val)) {
+          setLoginValidate(prev => ({
+            ...prev,
+            email: {
+              ...prev.email,
+              textError: 'Email không được để trống',
+              isError: true,
+            },
+          }));
+        } else if (!isEmail(val)) {
+          setLoginValidate(prev => ({
+            ...prev,
+            email: {
+              ...prev.email,
+              textError: 'Email không đúng định dạng',
+              isError: true,
+            },
+          }));
+        } else {
+          setLoginValidate(prev => ({
+            ...prev,
+            email: {
+              ...prev.email,
+              textError: '',
+              isError: false,
+            },
+          }));
+        }
+
+        break;
+
+      case 'password':
+        if (isBlank(val)) {
+          setLoginValidate(prev => ({
+            ...prev,
+            password: {
+              ...prev.password,
+              textError: 'Mật khẩu không được để trống',
+              isError: true,
+            },
+          }));
+        } else if (!isNotSpecialCharacter(val)) {
+          setLoginValidate(prev => ({
+            ...prev,
+            password: {
+              ...prev.password,
+              textError: 'Mật khẩu không được chứa các ký tự đặc biệt',
+              isError: true,
+            },
+          }));
+        } else if (isInsideLimitedLength(val, 1, 5)) {
+          setLoginValidate(prev => ({
+            ...prev,
+            password: {
+              ...prev.password,
+              textError: 'Mật khẩu từ 6 ký tự trở lên',
+              isError: true,
+            },
+          }));
+        } else if (!isInsideLimitedLength(val, 6, 30)) {
+          setLoginValidate(prev => ({
+            ...prev,
+            password: {
+              ...prev.password,
+              textError: 'độ dài mật khẩu tối thiểu là 6 tối đa là 30',
+              isError: true,
+            },
+          }));
+        } else {
+          setLoginValidate(prev => ({
+            ...prev,
+            password: {
+              ...prev.password,
+              textError: '',
+              isError: false,
+            },
+          }));
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
@@ -34,21 +160,38 @@ const LoginScreen = ({navigation}: any) => {
     return () => {
       unsubscribe();
     };
-  }, [navigation]);
+  }, []);
 
   const handleForgotThePassword = () => {
-    console.log('handleForgotThePassword');
+    navigation.navigate(appScreens.VERIFICATION_SCREEN);
   };
 
-  const handleLogin = () => {
-    const data = {
-      email: email,
-      password: password,
-      isRememberMe: isRememberMe,
-    };
-    console.log('====================================');
-    console.log(JSON.stringify(data));
-    console.log('====================================');
+  const handleShowError = () => {
+    const updatedLoginValidate = {...loginValidate};
+    let key: keyof Validate;
+    for (key in updatedLoginValidate) {
+      if (updatedLoginValidate[key].isError) {
+        updatedLoginValidate[key].visible = true;
+      } else {
+        updatedLoginValidate[key].visible = false;
+      }
+    }
+    setLoginValidate(updatedLoginValidate);
+  };
+
+  const handleLogin = async () => {
+    const result = checkAllFieldValidate(loginValidate);
+    if (result) {
+      // Check is the first time
+      // let key: keyof loginData;
+      console.log('====================================');
+      console.log(JSON.stringify(loginData));
+      console.log('====================================');
+    } else {
+      console.log('================unSuccess====================');
+      handleShowError();
+      setIsFirstTime(false);
+    }
   };
 
   return (
@@ -68,28 +211,45 @@ const LoginScreen = ({navigation}: any) => {
         />
         <SpaceComponent height={17} />
         <InputComponent
+          title="Email"
           affix={<Image source={require('../../assets/images/Mail.png')} />}
           placeholder={'Enter your email'}
           allowClear={false}
-          onChange={val => setEmail(val)}
+          onChange={val => handleOnTextChangeEvent('email', val)}
+          isError={isFirstTime ? undefined : loginValidate.email.isError}
+          validate={
+            <TextValidate
+              visible={loginValidate.email.visible}
+              text={loginValidate.email.textError}
+            />
+          }
         />
         <InputComponent
           affix={<Image source={require('../../assets/images/Password.png')} />}
           placeholder={'Enter your password'}
           isShowPass={true}
           allowClear={true}
-          onChange={val => setPassword(val)}
+          onChange={val => handleOnTextChangeEvent('password', val)}
+          isError={isFirstTime ? undefined : loginValidate.password.isError}
+          validate={
+            <TextValidate
+              visible={loginValidate.password.visible}
+              text={loginValidate.password.textError}
+            />
+          }
         />
         <RowComponent alignItems="center" justifyContent="space-between">
           <RowComponent alignItems="center" justifyContent="flex-start">
             <Switch
               trackColor={{true: appColors.primary}}
               thumbColor={appColors.white}
-              value={isRememberMe}
-              onChange={() => setIsRememberMe(!isRememberMe)}
+              value={loginData.isRememberMe}
+              onChange={() =>
+                handleOnTextChangeEvent('isRememberMe', !loginData.isRememberMe)
+              }
             />
             <TextComponent
-              color={isRememberMe ? appColors.black : undefined}
+              color={loginData.isRememberMe ? appColors.black : undefined}
               text="Remember Me"
             />
           </RowComponent>

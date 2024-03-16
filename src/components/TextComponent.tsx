@@ -25,6 +25,7 @@ interface Props {
   isTitle?: boolean;
   alignSelf?: 'auto' | FlexAlignType | undefined;
   upperCase?: boolean;
+  marginBottom?: number;
 }
 
 const TextComponent = (props: Props) => {
@@ -38,6 +39,7 @@ const TextComponent = (props: Props) => {
     fontWeight,
     isTitle,
     upperCase,
+    marginBottom,
   } = props;
   return (
     <Text
@@ -51,6 +53,7 @@ const TextComponent = (props: Props) => {
           textAlign,
           fontWeight,
           textTransform: upperCase ? 'uppercase' : undefined,
+          marginBottom,
         },
       ]}>
       {text}

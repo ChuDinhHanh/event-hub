@@ -44,10 +44,11 @@ const ButtonComponent = (props: Props) => {
     boxShadow,
     alignSelf,
   } = props;
+
   return (
     <TouchableOpacity
       disabled={isDisable}
-      onPress={onPress}
+      onPress={() => onPress()}
       style={[
         globalStyles.row,
         boxShadow && globalStyles.shadow,

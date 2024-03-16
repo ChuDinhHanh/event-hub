@@ -1,5 +1,11 @@
 import React, {ReactNode} from 'react';
-import {Image, ImageSourcePropType, ScrollView, View} from 'react-native';
+import {
+  Image,
+  ImageSourcePropType,
+  SafeAreaView,
+  ScrollView,
+  View,
+} from 'react-native';
 import {appColors} from '../constants/appColors';
 import {appInfo} from '../constants/appInfos';
 import RowComponent from './RowComponent';
@@ -29,7 +35,7 @@ const ContainerComponent = (props: Props) => {
   } = props;
 
   const content = (
-    <View
+    <SafeAreaView
       style={{
         paddingVertical,
         backgroundColor: backgroundColor ?? appColors.white,
@@ -39,7 +45,7 @@ const ContainerComponent = (props: Props) => {
         width: isFullWidth ? appInfo.sizes.WIDTH : undefined,
       }}>
       {children}
-    </View>
+    </SafeAreaView>
   );
 
   return (

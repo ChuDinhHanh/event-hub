@@ -25,7 +25,7 @@ const VerificationScreen = ({navigation}: any) => {
         <ButtonComponent
           marginVertical={10}
           alignSelf="flex-start"
-          onPress={() => navigation.goBack}
+          onPress={() => navigation.goBack()}
           affix={
             <AntDesign name="arrowleft" size={30} color={appColors.black} />
           }
