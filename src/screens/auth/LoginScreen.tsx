@@ -14,13 +14,9 @@ import TextValidate from '../../components/TextValidate';
 import {appColors} from '../../constants/appColors';
 import {appScreens} from '../../constants/appScreens';
 import {fontFamilies} from '../../constants/fontFamilies';
-import {
-  InputTextValidate,
-  isBlank,
-  isEmail,
-  isInsideLimitedLength,
-  isNotSpecialCharacter,
-} from '../../utils/Validate';
+import {InputTextValidate, Validator} from '../../utils/Validate';
+import authenticationAPI from '../../apis/authApi';
+import Loading from '../../modals/Loading';
 
 const initialValue = {
   email: '',
@@ -43,114 +39,82 @@ function checkAllFieldValidate(data: Validate): boolean {
   return true;
 }
 
+const ERROR_MESSAGES = {
+  emailRequired: 'Email không được để trống',
+  emailFormat: 'Email không đúng định dạng',
+  passwordRequired: 'Mật khẩu không được để trống',
+  passwordSpecialChar: 'Mật khẩu không được chứa các ký tự đặc biệt',
+  passwordLength: 'Mật khẩu từ 6 ký tự trở lên',
+  passwordMinLength: 'độ dài mật khẩu tối thiểu là 6 tối đa là 30',
+};
+
 const LoginScreen = ({navigation}: any) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState(initialValue);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [loginValidate, setLoginValidate] = useState<Validate>({
     email: {
-      textError: 'Email không được để trống',
+      textError: ERROR_MESSAGES.emailRequired,
       visible: false,
       isError: true,
     },
     password: {
-      textError: 'Password không được để trống',
+      textError: ERROR_MESSAGES.emailRequired,
       visible: false,
       isError: true,
     },
   });
 
-  const handleOnTextChangeEvent = (key: string, val: any) => {
+  // Validation functions
+  function validateEmail(email: string): string {
+    if (Validator.isBlank(email)) {
+      return ERROR_MESSAGES.emailRequired;
+    } else if (!Validator.isEmail(email)) {
+      return ERROR_MESSAGES.emailFormat;
+    }
+    return '';
+  }
+
+  function validatePassword(password: string): string {
+    if (Validator.isBlank(password)) {
+      return ERROR_MESSAGES.passwordRequired;
+    } else if (!Validator.isNotSpecialCharacter(password)) {
+      return ERROR_MESSAGES.passwordSpecialChar;
+    } else if (Validator.isInsideLimitedLength(password, 1, 5)) {
+      return ERROR_MESSAGES.passwordLength;
+    } else if (!Validator.isInsideLimitedLength(password, 6, 30)) {
+      return ERROR_MESSAGES.passwordMinLength;
+    }
+    return '';
+  }
+
+  // In your component
+  const handleOnTextChangeEvent = (key: string, val: string | boolean) => {
     const data: any = {...loginData, [key]: val};
     setLoginData(data);
     handleValidateActions(key, val);
   };
 
   const handleValidateActions = (key: string, val: any) => {
+    let error = '';
     switch (key) {
       case 'email':
-        if (isBlank(val)) {
-          setLoginValidate(prev => ({
-            ...prev,
-            email: {
-              ...prev.email,
-              textError: 'Email không được để trống',
-              isError: true,
-            },
-          }));
-        } else if (!isEmail(val)) {
-          setLoginValidate(prev => ({
-            ...prev,
-            email: {
-              ...prev.email,
-              textError: 'Email không đúng định dạng',
-              isError: true,
-            },
-          }));
-        } else {
-          setLoginValidate(prev => ({
-            ...prev,
-            email: {
-              ...prev.email,
-              textError: '',
-              isError: false,
-            },
-          }));
-        }
-
+        error = validateEmail(val);
         break;
-
       case 'password':
-        if (isBlank(val)) {
-          setLoginValidate(prev => ({
-            ...prev,
-            password: {
-              ...prev.password,
-              textError: 'Mật khẩu không được để trống',
-              isError: true,
-            },
-          }));
-        } else if (!isNotSpecialCharacter(val)) {
-          setLoginValidate(prev => ({
-            ...prev,
-            password: {
-              ...prev.password,
-              textError: 'Mật khẩu không được chứa các ký tự đặc biệt',
-              isError: true,
-            },
-          }));
-        } else if (isInsideLimitedLength(val, 1, 5)) {
-          setLoginValidate(prev => ({
-            ...prev,
-            password: {
-              ...prev.password,
-              textError: 'Mật khẩu từ 6 ký tự trở lên',
-              isError: true,
-            },
-          }));
-        } else if (!isInsideLimitedLength(val, 6, 30)) {
-          setLoginValidate(prev => ({
-            ...prev,
-            password: {
-              ...prev.password,
-              textError: 'độ dài mật khẩu tối thiểu là 6 tối đa là 30',
-              isError: true,
-            },
-          }));
-        } else {
-          setLoginValidate(prev => ({
-            ...prev,
-            password: {
-              ...prev.password,
-              textError: '',
-              isError: false,
-            },
-          }));
-        }
+        error = validatePassword(val);
         break;
-
       default:
         break;
     }
+    setLoginValidate(prev => ({
+      ...prev,
+      [key]: {
+        ...prev[key as keyof Validate],
+        textError: error,
+        isError: !!error,
+      },
+    }));
   };
 
   useEffect(() => {
@@ -179,16 +143,26 @@ const LoginScreen = ({navigation}: any) => {
     setLoginValidate(updatedLoginValidate);
   };
 
+  const handleCallLoginApi = async () => {
+    setIsLoading(true);
+    try {
+      const res = await authenticationAPI.HandleAuthentication(
+        '/register',
+        loginData,
+        'post',
+      );
+      console.log(res);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
+
   const handleLogin = async () => {
     const result = checkAllFieldValidate(loginValidate);
     if (result) {
-      // Check is the first time
-      // let key: keyof loginData;
-      console.log('====================================');
-      console.log(JSON.stringify(loginData));
-      console.log('====================================');
+      handleCallLoginApi();
     } else {
-      console.log('================unSuccess====================');
       handleShowError();
       setIsFirstTime(false);
     }
@@ -201,6 +175,8 @@ const LoginScreen = ({navigation}: any) => {
       backgroundColor={appColors.white}
       isCenter={false}
       imageBackground={require('../../assets/images/loginLogo.png')}>
+      {/* Loading */}
+      <Loading visible={isLoading} />
       {/* Body */}
       <SessionComponent padding={29} paddingTop={0}>
         <TextComponent

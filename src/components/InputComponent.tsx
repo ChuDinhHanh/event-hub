@@ -102,6 +102,7 @@ const InputComponent = (props: Props) => {
           keyboardType={type ?? 'default'}
           autoCapitalize="none"
           onEndEditing={onEnd}
+          onBlur={onBlur}
           style={{flex: 1}}
         />
         {allowClear ? (
