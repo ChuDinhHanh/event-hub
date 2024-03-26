@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Image } from 'react-native';
+import React, {useState} from 'react';
+import {Image} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {
   ButtonComponent,
@@ -11,15 +11,15 @@ import {
 } from '../../components';
 import SocialLoginComponent from '../../components/SocialLoginComponent';
 import TextValidate from '../../components/TextValidate';
-import { appColors } from '../../constants/appColors';
-import { appScreens } from '../../constants/appScreens';
-import { fontFamilies } from '../../constants/fontFamilies';
-import { ERROR_MESSAGES } from '../../languages/vietnamese.json';
+import {appColors} from '../../constants/appColors';
+import {appScreens} from '../../constants/appScreens';
+import {fontFamilies} from '../../constants/fontFamilies';
+import {ERROR_MESSAGES} from '../../languages/vietnamese.json';
 import Loading from '../../modals/Loading';
-import { useAppDispatch } from '../../redux/Hooks';
-import { SignUp } from '../../types/signUp';
-import { InputTextValidate, Validator } from '../../utils/Validate';
-import { handleVerification } from '../../apis/callApi';
+import {useAppDispatch} from '../../redux/Hooks';
+import {SignUp} from '../../types/signUp';
+import {InputTextValidate, Validator} from '../../utils/Validate';
+import {handleVerification} from '../../apis/callApi';
 
 const initialValue = {
   username: '',
@@ -43,7 +43,7 @@ function checkAllFieldValidator(data: Validate): boolean {
   return true;
 }
 
-const SignUpScreen = ({ navigation }: any) => {
+const SignUpScreen = ({navigation}: any) => {
   // const navigation =
   //   useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isFirstTime, setIsFirstTime] = useState(true);
@@ -74,7 +74,7 @@ const SignUpScreen = ({ navigation }: any) => {
   });
 
   const handleChangeValue = (key: string, value: string) => {
-    const data: any = { ...signUpData, [key]: value };
+    const data: any = {...signUpData, [key]: value};
     setSignUpData(data);
     handleValidateActions(key, value);
   };
@@ -164,22 +164,21 @@ const SignUpScreen = ({ navigation }: any) => {
     }
   };
 
-
   const handleSignUp = async () => {
     isFirstTime && setIsFirstTime(false);
     if (checkAllFieldValidator(signUpValidate)) {
       const res = await handleVerification(signUpData);
-      Boolean(res) && navigation.navigate(appScreens.VERIFICATION_SCREEN, {
-        code: res?.data.code,
-        username: signUpData.username,
-        email: signUpData.email,
-        password: signUpData.password
-      });
+      Boolean(res) &&
+        navigation.navigate(appScreens.VERIFICATION_SCREEN, {
+          code: res?.data.code,
+          username: signUpData.username,
+          email: signUpData.email,
+          password: signUpData.password,
+        });
     } else {
       handleShowError();
     }
   };
-
 
   return (
     <ContainerComponent
@@ -210,7 +209,7 @@ const SignUpScreen = ({ navigation }: any) => {
         <InputComponent
           affix={
             <Image
-              style={{ width: 22, height: 22 }}
+              style={{width: 22, height: 22}}
               source={require('../../assets/images/Profile.png')}
             />
           }

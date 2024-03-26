@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useRef, useState } from 'react';
-import { Image, Switch, TextInput } from 'react-native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import React, {useEffect, useRef, useState} from 'react';
+import {Image, LogBox, Switch, TextInput} from 'react-native';
 import authenticationAPI from '../../apis/authApi';
 import {
   ButtonComponent,
@@ -15,16 +15,18 @@ import {
 } from '../../components';
 import SocialLoginComponent from '../../components/SocialLoginComponent';
 import TextValidate from '../../components/TextValidate';
-import { appColors } from '../../constants/appColors';
-import { appScreens } from '../../constants/appScreens';
-import { fontFamilies } from '../../constants/fontFamilies';
-import { ERROR_MESSAGES } from '../../languages/vietnamese.json';
+import {appColors} from '../../constants/appColors';
+import {appScreens} from '../../constants/appScreens';
+import {fontFamilies} from '../../constants/fontFamilies';
+import {ERROR_MESSAGES} from '../../languages/vietnamese.json';
 import Loading from '../../modals/Loading';
-import { RootStackParamList } from '../../navigators/AppRouters';
-import { useAppDispatch } from '../../redux/Hooks';
-import { addAuth } from '../../redux/Silce';
-import { InputTextValidate, Validator } from '../../utils/Validate';
-import { loginType } from '../../types/Login';
+import {RootStackParamList} from '../../navigators/AppRouters';
+import {useAppDispatch} from '../../redux/Hooks';
+import {addAuth} from '../../redux/Silce';
+import {InputTextValidate, Validator} from '../../utils/Validate';
+import {loginType} from '../../types/Login';
+LogBox.ignoreLogs(['Warning: ...']);
+LogBox.ignoreAllLogs();
 
 const initialValue: loginType = {
   email: '',
@@ -47,9 +49,9 @@ function checkAllFieldValidate(data: Validate): boolean {
   return true;
 }
 
-const LoginScreen = () => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+const LoginScreen = ({navigation}: any) => {
+  // const navigation =
+  //   useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocus = useIsFocused();
   const dispatch = useAppDispatch();
   const emailRef = useRef<TextInput>(null);
@@ -94,9 +96,8 @@ const LoginScreen = () => {
   }
 
   const handleOnTextChangeEvent = (key: string, val: string | boolean) => {
-    const data: any = { ...loginData, [key]: val };
+    const data: any = {...loginData, [key]: val};
     setLoginData(data);
-    // handleValidateActions(key, val);
   };
 
   const handleValidateActions = (key: string, val: any) => {
@@ -147,13 +148,14 @@ const LoginScreen = () => {
   };
 
   const handleForgotThePassword = () => {
-    navigation.replace(
-      appScreens.VERIFICATION_SCREEN as keyof RootStackParamList,
-    );
+    navigation.navigate(appScreens.FORGOT_PASSWORD_SCREEN);
+    // navigation.replace(
+    //   appScreens.VERIFICATION_SCREEN as keyof RootStackParamList,
+    // );
   };
 
   const handleShowError = () => {
-    const updatedLoginValidate = { ...loginValidate };
+    const updatedLoginValidate = {...loginValidate};
     let key: keyof Validate;
     for (key in updatedLoginValidate) {
       if (updatedLoginValidate[key].isError) {
@@ -276,7 +278,7 @@ const LoginScreen = () => {
         <RowComponent alignItems="center" justifyContent="space-between">
           <RowComponent alignItems="center" justifyContent="flex-start">
             <Switch
-              trackColor={{ true: appColors.primary }}
+              trackColor={{true: appColors.primary}}
               thumbColor={appColors.white}
               value={loginData.isRememberMe}
               onChange={() =>

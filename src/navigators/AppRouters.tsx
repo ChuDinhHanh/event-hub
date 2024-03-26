@@ -1,12 +1,12 @@
-import { useAsyncStorage } from '@react-native-async-storage/async-storage';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../redux/Hooks';
-import { addAuth } from '../redux/Silce';
+import {useAsyncStorage} from '@react-native-async-storage/async-storage';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React, {useEffect} from 'react';
+import {useAppDispatch, useAppSelector} from '../redux/Hooks';
+import {addAuth} from '../redux/Silce';
 import IntroduceNavigator from './IntroduceNavigator';
 import MainNavigator from './MainNavigator';
-import { appScreens } from '../constants/appScreens';
-import { Header } from 'react-native/Libraries/NewAppScreen';
+import {appScreens} from '../constants/appScreens';
+import {Header} from 'react-native/Libraries/NewAppScreen';
 import AuthNavigator from './AuthNavigator';
 
 export type RootStackParamList = {
@@ -26,7 +26,7 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 const AppRouters = () => {
   const auth = useAppSelector(state => state.auth.authData);
-  const { getItem } = useAsyncStorage('auth');
+  const {getItem} = useAsyncStorage('auth');
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -46,8 +46,8 @@ const AppRouters = () => {
 
   console.log(
     ' ----------------------' +
-    Boolean(auth.accessToken) +
-    ' ----------------------',
+      Boolean(auth.accessToken) +
+      ' ----------------------',
   );
 
   const mainFunc = () => {
@@ -55,7 +55,7 @@ const AppRouters = () => {
       <RootStack.Screen
         name={appScreens.MAIN_NAVIGATOR as keyof RootStackParamList}
         component={MainNavigator}
-        options={{ header: () => false }}
+        options={{header: () => false}}
       />
     );
   };
@@ -65,7 +65,7 @@ const AppRouters = () => {
       <RootStack.Screen
         name={appScreens.INTRODUCE_NAVIGATOR as keyof RootStackParamList}
         component={IntroduceNavigator}
-        options={{ header: () => false }}
+        options={{header: () => false}}
       />
     );
   };
@@ -75,7 +75,7 @@ const AppRouters = () => {
       <RootStack.Screen
         name={appScreens.AUTH_NAVIGATOR as keyof RootStackParamList}
         component={AuthNavigator}
-        options={{ header: () => false }}
+        options={{header: () => false}}
       />
     );
   };

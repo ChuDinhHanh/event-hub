@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, {ReactNode, useEffect, useRef, useState} from 'react';
 import {
   KeyboardType,
   KeyboardTypeOptions,
@@ -7,8 +7,8 @@ import {
   View,
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import { appColors } from '../constants/appColors';
-import { fontFamilies } from '../constants/fontFamilies';
+import {appColors} from '../constants/appColors';
+import {fontFamilies} from '../constants/fontFamilies';
 import ButtonComponent from './ButtonComponent';
 import SpaceComponent from './SpaceComponent';
 import TextComponent from './TextComponent';
@@ -87,8 +87,8 @@ const InputComponent = (props: Props) => {
             borderColor: isError
               ? appColors.red
               : !isError && isError != undefined
-                ? appColors.green
-                : appColors.gray4,
+              ? appColors.green
+              : appColors.gray4,
           },
         ]}>
         {affix && <View style={styles.affixAndSuffix}>{affix ?? affix}</View>}
@@ -103,7 +103,7 @@ const InputComponent = (props: Props) => {
           autoCapitalize="none"
           onEndEditing={onEnd}
           onBlur={onBlur}
-          style={{ flex: 1 }}
+          style={{flex: 1}}
         />
         {allowClear ? (
           <View style={styles.affixAndSuffix}>

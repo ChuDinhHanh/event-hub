@@ -1,8 +1,8 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
-import { LoginScreen, SignUpScreen, ForgotPasswordScreen } from '../screens';
+import {LoginScreen, SignUpScreen, ForgotPasswordScreen} from '../screens';
 import OnBoardingScreen from '../screens/auth/OnboardingScreen';
-import { appScreens } from '../constants/appScreens';
+import {appScreens} from '../constants/appScreens';
 import VerificationScreen from '../screens/auth/VerificationScreen';
 
 const AuthNavigator = () => {
