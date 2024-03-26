@@ -1,3 +1,5 @@
+import {CommonActions, useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useRef, useState} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 import {
@@ -14,13 +16,15 @@ import {appScreens} from '../../constants/appScreens';
 import {appVariables} from '../../constants/appVariables';
 import {fontFamilies} from '../../constants/fontFamilies';
 import {onboardingData} from '../../data/data';
-
-const OnboardingScreen = ({navigation}: any) => {
+import {RootStackParamList} from '../../navigators/AppRouters';
+const OnboardingScreen = () => {
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const singleOnboardingWidth = appInfo.sizes.WIDTH;
   const numberDots = onboardingData.length;
   const totalWidth = numberDots * singleOnboardingWidth;
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleOnPressButtonEvent = (type: number) => {
     if (type === appVariables.NEXT && currentIndex + 1 !== numberDots) {
@@ -30,7 +34,13 @@ const OnboardingScreen = ({navigation}: any) => {
       });
       return;
     }
-    navigation.navigate(appScreens.LOGIN_SCREEN);
+
+    navigation.dispatch(
+      CommonActions.navigate(appScreens.AUTH_NAVIGATOR, {
+        Screen: appScreens.LOGIN_SCREEN,
+        data: undefined,
+      }),
+    );
   };
 
   return (

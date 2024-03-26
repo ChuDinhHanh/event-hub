@@ -1,4 +1,4 @@
-import React, {ReactNode, useEffect, useRef, useState} from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   KeyboardType,
   KeyboardTypeOptions,
@@ -7,11 +7,11 @@ import {
   View,
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {appColors} from '../constants/appColors';
+import { appColors } from '../constants/appColors';
+import { fontFamilies } from '../constants/fontFamilies';
 import ButtonComponent from './ButtonComponent';
 import SpaceComponent from './SpaceComponent';
 import TextComponent from './TextComponent';
-import {fontFamilies} from '../constants/fontFamilies';
 
 interface Props {
   value?: string;
@@ -31,7 +31,7 @@ interface Props {
   onFocus?: () => void;
   onBlur?: () => void;
   defaultValue?: string;
-  textInputRef?: React.LegacyRef<TextInput>;
+  inputRef?: React.RefObject<TextInput>;
   keyboardType?: KeyboardTypeOptions;
   validate?: ReactNode;
   isError?: boolean;
@@ -55,16 +55,16 @@ const InputComponent = (props: Props) => {
     numberLine,
     onBlur,
     onFocus,
-    textInputRef,
+    inputRef,
     title,
     validate,
     isError,
   } = props;
   const [_isShowPass, _setIsShowPass] = useState<boolean>(isShowPass ?? false);
-  const inputRef = useRef<TextInput>(null);
 
+  const _inputRef = useRef<TextInput>(null);
   useEffect(() => {
-    isFocus && inputRef.current?.focus();
+    isFocus && _inputRef.current?.focus();
   }, [isFocus]);
 
   return (
@@ -87,13 +87,13 @@ const InputComponent = (props: Props) => {
             borderColor: isError
               ? appColors.red
               : !isError && isError != undefined
-              ? appColors.green
-              : appColors.gray4,
+                ? appColors.green
+                : appColors.gray4,
           },
         ]}>
         {affix && <View style={styles.affixAndSuffix}>{affix ?? affix}</View>}
         <TextInput
-          ref={inputRef}
+          ref={inputRef ?? _inputRef}
           value={value}
           placeholder={placeholder}
           onChangeText={val => onChange(val)}
@@ -103,7 +103,7 @@ const InputComponent = (props: Props) => {
           autoCapitalize="none"
           onEndEditing={onEnd}
           onBlur={onBlur}
-          style={{flex: 1}}
+          style={{ flex: 1 }}
         />
         {allowClear ? (
           <View style={styles.affixAndSuffix}>

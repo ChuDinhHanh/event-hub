@@ -1,24 +1,14 @@
+import {useAsyncStorage} from '@react-native-async-storage/async-storage';
+import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import 'react-native-gesture-handler';
-import AuthNavigator from './src/navigators/AuthNavigator';
-import {SplashScreen} from './src/screens';
-import {NavigationContainer} from '@react-navigation/native';
-import {useAsyncStorage} from '@react-native-async-storage/async-storage';
-import MainNavigator from './src/navigators/MainNavigator';
-import {StatusBar} from 'react-native';
-import {appColors} from './src/constants/appColors';
+import AppRouters from './src/navigators/AppRouters';
+import {store} from './src/redux/Store';
+import {Provider} from 'react-redux';
 
 const App = () => {
-  const [isShowSplash, setIsShowSplash] = useState(true);
   const [accessToken, setAccessToken] = useState('');
   const {getItem, setItem} = useAsyncStorage('assetToken');
-
-  useEffect(() => {
-    const timeOut = setTimeout(() => {
-      setIsShowSplash(false);
-    }, 1500);
-    return () => clearTimeout(timeOut);
-  }, []);
 
   useEffect(() => {
     checkLogin();
@@ -30,16 +20,11 @@ const App = () => {
   };
 
   return (
-    <React.Fragment>
-      <StatusBar barStyle={'dark-content'} backgroundColor={appColors.white} />
-      {isShowSplash ? (
-        <SplashScreen />
-      ) : (
-        <NavigationContainer>
-          {accessToken ? <MainNavigator /> : <AuthNavigator />}
-        </NavigationContainer>
-      )}
-    </React.Fragment>
+    <Provider store={store}>
+      <NavigationContainer>
+        <AppRouters />
+      </NavigationContainer>
+    </Provider>
   );
 };
 

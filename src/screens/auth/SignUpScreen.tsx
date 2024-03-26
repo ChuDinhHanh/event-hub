@@ -1,7 +1,6 @@
-import React, {useState} from 'react';
-import {Image} from 'react-native';
+import React, { useState } from 'react';
+import { Image } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import authenticationAPI from '../../apis/authApi';
 import {
   ButtonComponent,
   ContainerComponent,
@@ -12,13 +11,18 @@ import {
 } from '../../components';
 import SocialLoginComponent from '../../components/SocialLoginComponent';
 import TextValidate from '../../components/TextValidate';
-import {appColors} from '../../constants/appColors';
-import {fontFamilies} from '../../constants/fontFamilies';
+import { appColors } from '../../constants/appColors';
+import { appScreens } from '../../constants/appScreens';
+import { fontFamilies } from '../../constants/fontFamilies';
+import { ERROR_MESSAGES } from '../../languages/vietnamese.json';
 import Loading from '../../modals/Loading';
-import {InputTextValidate, Validator} from '../../utils/Validate';
+import { useAppDispatch } from '../../redux/Hooks';
+import { SignUp } from '../../types/signUp';
+import { InputTextValidate, Validator } from '../../utils/Validate';
+import { handleVerification } from '../../apis/callApi';
 
 const initialValue = {
-  userName: '',
+  username: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -39,27 +43,13 @@ function checkAllFieldValidator(data: Validate): boolean {
   return true;
 }
 
-const ERROR_MESSAGES = {
-  userNameRequired: 'Tên không được để trống',
-  userNameLength: 'Tên có độ dài tối thiểu là 6 tối đa là 30',
-  usernameSpecialChar: 'Tên không được chứa các ký tự đặc biệt',
-  // #1
-  emailRequired: 'Email không được để trống',
-  emailFormat: 'Email không đúng định dạng',
-  // #2
-  passwordRequired: 'Mật khẩu không được để trống',
-  passwordSpecialChar: 'Mật khẩu không được chứa các ký tự đặc biệt',
-  passwordLength: 'Mật khẩu từ 6 ký tự trở lên',
-  passwordMinLength: 'Độ dài mật khẩu tối thiểu là 6 tối đa là 30',
-  // #3
-  confirmPasswordNotMatch: 'Mật khẩu không giống nhau',
-  confirmPasswordRequire: 'Mật khẩu xác nhận không được để trống',
-};
-
-const SignUpScreen = ({navigation}: any) => {
+const SignUpScreen = ({ navigation }: any) => {
+  // const navigation =
+  //   useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isFirstTime, setIsFirstTime] = useState(true);
-  const [values, setValues] = useState(initialValue);
+  const [signUpData, setSignUpData] = useState<SignUp>(initialValue);
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const [signUpValidate, setSignUpValidate] = useState<Validate>({
     username: {
       textError: ERROR_MESSAGES.userNameRequired,
@@ -84,8 +74,8 @@ const SignUpScreen = ({navigation}: any) => {
   });
 
   const handleChangeValue = (key: string, value: string) => {
-    const data: any = {...values, [key]: value};
-    setValues(data);
+    const data: any = { ...signUpData, [key]: value };
+    setSignUpData(data);
     handleValidateActions(key, value);
   };
 
@@ -148,7 +138,7 @@ const SignUpScreen = ({navigation}: any) => {
         error = validatePassword(value);
         break;
       case 'confirmPassword':
-        error = validatePasswordConfirm(values.password, value);
+        error = validatePasswordConfirm(signUpData.password, value);
         break;
       default:
         break;
@@ -174,29 +164,22 @@ const SignUpScreen = ({navigation}: any) => {
     }
   };
 
-  const handleCallApi = async () => {
-    setIsLoading(true);
-    try {
-      const res = await authenticationAPI.HandleAuthentication(
-        '/register',
-        values,
-        'post',
-      );
-      console.log(res);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-    }
-  };
 
   const handleSignUp = async () => {
     isFirstTime && setIsFirstTime(false);
     if (checkAllFieldValidator(signUpValidate)) {
-      handleCallApi();
+      const res = await handleVerification(signUpData);
+      Boolean(res) && navigation.navigate(appScreens.VERIFICATION_SCREEN, {
+        code: res?.data.code,
+        username: signUpData.username,
+        email: signUpData.email,
+        password: signUpData.password
+      });
     } else {
       handleShowError();
     }
   };
+
 
   return (
     <ContainerComponent
@@ -227,7 +210,7 @@ const SignUpScreen = ({navigation}: any) => {
         <InputComponent
           affix={
             <Image
-              style={{width: 22, height: 22}}
+              style={{ width: 22, height: 22 }}
               source={require('../../assets/images/Profile.png')}
             />
           }
@@ -263,8 +246,8 @@ const SignUpScreen = ({navigation}: any) => {
           onChange={val => handleChangeValue('password', val)}
           isError={isFirstTime ? undefined : signUpValidate.password.isError}
           onBlur={() => {
-            values.confirmPassword.length !== 0 &&
-              handleChangeValue('confirmPassword', values.confirmPassword);
+            signUpData.confirmPassword.length !== 0 &&
+              handleChangeValue('confirmPassword', signUpData.confirmPassword);
           }}
           validate={
             <TextValidate
@@ -316,7 +299,7 @@ const SignUpScreen = ({navigation}: any) => {
             }
           />
         </ContainerComponent>
-        <SocialLoginComponent navigation={navigation} type="sign_up" />
+        <SocialLoginComponent navigation={navigation} isLogin={false} />
       </SessionComponent>
     </ContainerComponent>
   );

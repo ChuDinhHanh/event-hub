@@ -11,11 +11,11 @@ import {appScreens} from '../constants/appScreens';
 import {useNavigation} from '@react-navigation/native';
 
 interface Props {
-  type: 'Sign_in' | 'sign_up';
+  isLogin: boolean;
   navigation: any;
 }
 const SocialLoginComponent = (props: Props) => {
-  const {type, navigation} = props;
+  const {isLogin, navigation} = props;
   return (
     <ContainerComponent isCenter={true}>
       <TextComponent text="OR" fontSize={16} fontFamily={fontFamilies.medium} />
@@ -65,16 +65,12 @@ const SocialLoginComponent = (props: Props) => {
           fontSize={15}
           fontFamily={fontFamilies.regular}
           color={appColors.black}
-          text={
-            type === 'Sign_in'
-              ? 'Don’t have an account?'
-              : 'Already have an account?'
-          }
+          text={isLogin ? 'Don’t have an account?' : 'Already have an account?'}
         />
         <SpaceComponent width={10} />
         <ButtonComponent
           onPress={() => {
-            type === 'Sign_in'
+            isLogin
               ? navigation.navigate(appScreens.SIGN_UP_SCREEN)
               : navigation.goBack();
           }}
@@ -83,7 +79,7 @@ const SocialLoginComponent = (props: Props) => {
               fontSize={15}
               fontFamily={fontFamilies.regular}
               color={appColors.primary}
-              text={type === 'Sign_in' ? 'Sign up' : 'Sign in'}
+              text={isLogin ? 'Sign up' : 'Sign in'}
             />
           }
         />

@@ -1,9 +1,24 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {ActivityIndicator, Image, StyleSheet, View} from 'react-native';
 import {appColors} from '../constants/appColors';
 import {appInfo} from '../constants/appInfos';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {RootStackParamList} from '../navigators/AppRouters';
+import {appScreens} from '../constants/appScreens';
 
 const SplashScreen = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  useEffect(() => {
+    const timeOut = setTimeout(() => {
+      navigation.replace(
+        appScreens.ONBOARDING_SCREEN as keyof RootStackParamList,
+      );
+    }, 1500);
+    return () => clearTimeout(timeOut);
+  }, []);
+
   return (
     <View
       style={{

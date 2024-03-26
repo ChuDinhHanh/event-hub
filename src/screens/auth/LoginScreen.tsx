@@ -1,5 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {Image, Switch} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useRef, useState } from 'react';
+import { Image, Switch, TextInput } from 'react-native';
+import authenticationAPI from '../../apis/authApi';
 import {
   ButtonComponent,
   ContainerComponent,
@@ -11,17 +15,21 @@ import {
 } from '../../components';
 import SocialLoginComponent from '../../components/SocialLoginComponent';
 import TextValidate from '../../components/TextValidate';
-import {appColors} from '../../constants/appColors';
-import {appScreens} from '../../constants/appScreens';
-import {fontFamilies} from '../../constants/fontFamilies';
-import {InputTextValidate, Validator} from '../../utils/Validate';
-import authenticationAPI from '../../apis/authApi';
+import { appColors } from '../../constants/appColors';
+import { appScreens } from '../../constants/appScreens';
+import { fontFamilies } from '../../constants/fontFamilies';
+import { ERROR_MESSAGES } from '../../languages/vietnamese.json';
 import Loading from '../../modals/Loading';
+import { RootStackParamList } from '../../navigators/AppRouters';
+import { useAppDispatch } from '../../redux/Hooks';
+import { addAuth } from '../../redux/Silce';
+import { InputTextValidate, Validator } from '../../utils/Validate';
+import { loginType } from '../../types/Login';
 
-const initialValue = {
+const initialValue: loginType = {
   email: '',
   password: '',
-  isRememberMe: true,
+  isRememberMe: false,
 };
 
 interface Validate {
@@ -39,18 +47,15 @@ function checkAllFieldValidate(data: Validate): boolean {
   return true;
 }
 
-const ERROR_MESSAGES = {
-  emailRequired: 'Email không được để trống',
-  emailFormat: 'Email không đúng định dạng',
-  passwordRequired: 'Mật khẩu không được để trống',
-  passwordSpecialChar: 'Mật khẩu không được chứa các ký tự đặc biệt',
-  passwordLength: 'Mật khẩu từ 6 ký tự trở lên',
-  passwordMinLength: 'độ dài mật khẩu tối thiểu là 6 tối đa là 30',
-};
-
-const LoginScreen = ({navigation}: any) => {
+const LoginScreen = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const isFocus = useIsFocused();
+  const dispatch = useAppDispatch();
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [loginData, setLoginData] = useState(initialValue);
+  const [loginData, setLoginData] = useState<loginType>(initialValue);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [loginValidate, setLoginValidate] = useState<Validate>({
     email: {
@@ -88,11 +93,10 @@ const LoginScreen = ({navigation}: any) => {
     return '';
   }
 
-  // In your component
   const handleOnTextChangeEvent = (key: string, val: string | boolean) => {
-    const data: any = {...loginData, [key]: val};
+    const data: any = { ...loginData, [key]: val };
     setLoginData(data);
-    handleValidateActions(key, val);
+    // handleValidateActions(key, val);
   };
 
   const handleValidateActions = (key: string, val: any) => {
@@ -126,12 +130,30 @@ const LoginScreen = ({navigation}: any) => {
     };
   }, []);
 
+  const handleGetDataFromLocal = () => {
+    return new Promise((resolve, reject) => {
+      AsyncStorage.getItem('save')
+        .then(data => {
+          if (data) {
+            resolve(JSON.parse(data));
+          } else {
+            reject(new Error('data not found!'));
+          }
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  };
+
   const handleForgotThePassword = () => {
-    navigation.navigate(appScreens.VERIFICATION_SCREEN);
+    navigation.replace(
+      appScreens.VERIFICATION_SCREEN as keyof RootStackParamList,
+    );
   };
 
   const handleShowError = () => {
-    const updatedLoginValidate = {...loginValidate};
+    const updatedLoginValidate = { ...loginValidate };
     let key: keyof Validate;
     for (key in updatedLoginValidate) {
       if (updatedLoginValidate[key].isError) {
@@ -145,23 +167,54 @@ const LoginScreen = ({navigation}: any) => {
 
   const handleCallLoginApi = async () => {
     setIsLoading(true);
+    let response = null;
     try {
       const res = await authenticationAPI.HandleAuthentication(
-        '/register',
+        '/login',
         loginData,
         'post',
       );
-      console.log(res);
       setIsLoading(false);
+      response = res;
     } catch (error) {
       setIsLoading(false);
     }
+    return response;
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = (await handleGetDataFromLocal()) as loginType;
+        setLoginData(data);
+        if (isFirstTime) {
+          handleValidateActions('email', data.email);
+          handleValidateActions('password', data.password);
+        }
+      } catch (error) {
+        console.log('Error retrieving data from AsyncStorage:', error);
+      }
+    };
+
+    fetchData();
+  }, [isFocus]);
 
   const handleLogin = async () => {
     const result = checkAllFieldValidate(loginValidate);
     if (result) {
-      handleCallLoginApi();
+      const res = await handleCallLoginApi();
+      dispatch(addAuth(res?.data));
+      // Save auth data
+      await AsyncStorage.setItem('auth', JSON.stringify(res?.data));
+      // Save data to login again
+      await AsyncStorage.setItem(
+        'save',
+        JSON.stringify({
+          email: res?.data.email,
+          isRememberMe: loginData.isRememberMe,
+          password: loginData.isRememberMe ? loginData.password : null,
+        }),
+      );
     } else {
       handleShowError();
       setIsFirstTime(false);
@@ -187,11 +240,14 @@ const LoginScreen = ({navigation}: any) => {
         />
         <SpaceComponent height={17} />
         <InputComponent
+          inputRef={emailRef}
+          value={loginData.email}
           title="Email"
           affix={<Image source={require('../../assets/images/Mail.png')} />}
           placeholder={'Enter your email'}
           allowClear={false}
           onChange={val => handleOnTextChangeEvent('email', val)}
+          onEnd={() => handleValidateActions('email', loginData.email)}
           isError={isFirstTime ? undefined : loginValidate.email.isError}
           validate={
             <TextValidate
@@ -201,12 +257,15 @@ const LoginScreen = ({navigation}: any) => {
           }
         />
         <InputComponent
+          inputRef={passwordRef}
+          value={loginData.password}
           affix={<Image source={require('../../assets/images/Password.png')} />}
           placeholder={'Enter your password'}
           isShowPass={true}
           allowClear={true}
           onChange={val => handleOnTextChangeEvent('password', val)}
           isError={isFirstTime ? undefined : loginValidate.password.isError}
+          onEnd={() => handleValidateActions('password', loginData.password)}
           validate={
             <TextValidate
               visible={loginValidate.password.visible}
@@ -217,7 +276,7 @@ const LoginScreen = ({navigation}: any) => {
         <RowComponent alignItems="center" justifyContent="space-between">
           <RowComponent alignItems="center" justifyContent="flex-start">
             <Switch
-              trackColor={{true: appColors.primary}}
+              trackColor={{ true: appColors.primary }}
               thumbColor={appColors.white}
               value={loginData.isRememberMe}
               onChange={() =>
@@ -261,7 +320,7 @@ const LoginScreen = ({navigation}: any) => {
           />
         </ContainerComponent>
         <SpaceComponent height={10} />
-        <SocialLoginComponent navigation={navigation} type="Sign_in" />
+        <SocialLoginComponent navigation={navigation} isLogin={true} />
       </SessionComponent>
     </ContainerComponent>
   );
